@@ -41,6 +41,18 @@ local function get_arguments()
   end)
 end
 
+local function get_env()
+  return coroutine.create(function(dap_run_co)
+    local env = {}
+      vim.ui.input({ prompt = "Env Vars: " }, function(input)
+        for k, v in string.gmatch(input, "([%w_/]+)=([%w_/]+)") do
+          env[k] = v
+        end
+        coroutine.resume(dap_run_co, env)
+      end)
+  end)
+end
+
 local function get_build_flags(config)
   return coroutine.create(function(dap_run_co)
     local build_flags = config.build_flags
@@ -48,16 +60,6 @@ local function get_build_flags(config)
       build_flags = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, build_flags)
     end)
-  end)
-end
-
-local function get_env(config)
-  return coroutine.create(function(dap_run_co)
-    local env = {}
-      vim.ui.input({ prompt = "Env Vars: " }, function(input)
-        env = vim.split(input or "", " ")
-        coroutine.resume(dap_run_co, env)
-      end)
   end)
 end
 
