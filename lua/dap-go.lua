@@ -34,7 +34,7 @@ end
 local function get_arguments()
   return coroutine.create(function(dap_run_co)
     local args = {}
-    vim.ui.input({ prompt = "Args: " }, function(input)
+    vim.ui.input({ prompt = "DAP - Args: " }, function(input)
       args = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, args)
     end)
@@ -44,7 +44,7 @@ end
 local function get_env()
   return coroutine.create(function(dap_run_co)
     local env = {}
-      vim.ui.input({ prompt = "Env Vars: " }, function(input)
+      vim.ui.input({ prompt = "DAP - Env Vars: " }, function(input)
         for k, v in string.gmatch(input, "([%w_/]+)=([%w_/]+)") do
           env[k] = v
         end
