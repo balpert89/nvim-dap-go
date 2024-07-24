@@ -119,11 +119,10 @@ local function setup_go_configuration(dap, configs)
     },
                 {
       type = "go",
-      name = "Debug (Arguments & Build Flags & Environment Variables)",
+      name = "Debug (Arguments & Environment Variables)",
       request = "launch",
       program = "${file}",
       args = get_arguments,
-      buildFlags = get_build_flags,
       env = get_env,
     },
     {
