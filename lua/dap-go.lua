@@ -34,7 +34,7 @@ end
 local function get_arguments()
   return coroutine.create(function(dap_run_co)
     local args = {}
-    vim.ui.input({ prompt = "Args: " }, function(input)
+    vim.fn.input({ prompt = "Args: " }, function(input)
       args = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, args)
     end)
@@ -44,7 +44,7 @@ end
 local function get_build_flags(config)
   return coroutine.create(function(dap_run_co)
     local build_flags = config.build_flags
-    vim.ui.input({ prompt = "Build Flags: " }, function(input)
+    vim.fn.input({ prompt = "Build Flags: " }, function(input)
       build_flags = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, build_flags)
     end)
@@ -53,7 +53,7 @@ end
 
 local function filtered_pick_process()
   local opts = {}
-  vim.ui.input(
+  vim.fn.input(
     { prompt = "Search by process name (lua pattern), or hit enter to select from the process list: " },
     function(input)
       opts["filter"] = input or ""
