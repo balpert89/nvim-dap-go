@@ -53,14 +53,13 @@ end
 
 local function get_env(config)
   return coroutine.create(function(dap_run_co)
-    local env = config.env
+    local env = {}
       vim.ui.input({ prompt = "Env Vars: " }, function(input)
         env = vim.split(input or "", " ")
         coroutine.resume(dap_run_co, env)
       end)
   end)
 end
-
 
 local function filtered_pick_process()
   local opts = {}
