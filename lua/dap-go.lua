@@ -34,7 +34,7 @@ end
 local function get_arguments()
   return coroutine.create(function(dap_run_co)
     local args = {}
-    vim.fn.input({ prompt = "Args: " }, function(input)
+    vim.ui.input({ prompt = "Args: " }, function(input)
       args = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, args)
     end)
@@ -44,16 +44,27 @@ end
 local function get_build_flags(config)
   return coroutine.create(function(dap_run_co)
     local build_flags = config.build_flags
-    vim.fn.input({ prompt = "Build Flags: " }, function(input)
+    vim.ui.input({ prompt = "Build Flags: " }, function(input)
       build_flags = vim.split(input or "", " ")
       coroutine.resume(dap_run_co, build_flags)
     end)
   end)
 end
 
+local function get_env(config)
+  return coroutine.create(function(dap_run_co)
+    local env = config.env
+      vim.ui.input({ prompt = "Env Vars: " }, function(input)
+        env = vim.split(input or "", " ")
+        coroutine.resume(dap_run_co, env)
+      end)
+  end)
+end
+
+
 local function filtered_pick_process()
   local opts = {}
-  vim.fn.input(
+  vim.ui.input(
     { prompt = "Search by process name (lua pattern), or hit enter to select from the process list: " },
     function(input)
       opts["filter"] = input or ""
@@ -105,6 +116,15 @@ local function setup_go_configuration(dap, configs)
       program = "${file}",
       args = get_arguments,
       buildFlags = get_build_flags,
+    },
+                {
+      type = "go",
+      name = "Debug (Arguments & Build Flags & Environment Variables)",
+      request = "launch",
+      program = "${file}",
+      args = get_arguments,
+      buildFlags = get_build_flags,
+      env = get_env,
     },
     {
       type = "go",
