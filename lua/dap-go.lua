@@ -17,6 +17,7 @@ local default_config = {
     -- Automativally handle the issue on Windows where delve needs
     -- to be run in attched mode or it will fail (actually crashes).
     detached = vim.fn.has("win32") == 0,
+    output_mode = "remote",
   },
   tests = {
     verbose = false,
@@ -78,7 +79,7 @@ local function setup_delve_adapter(dap, config)
   local args = { "dap", "-l", "127.0.0.1:" .. config.delve.port }
   vim.list_extend(args, config.delve.args)
 
-  dap.adapters.go = {
+  local delve_config = {
     type = "server",
     port = config.delve.port,
     executable = {
@@ -91,16 +92,35 @@ local function setup_delve_adapter(dap, config)
       initialize_timeout_sec = config.delve.initialize_timeout_sec,
     },
   }
+
+  dap.adapters.go = function(callback, client_config)
+    if client_config.port == nil then
+      callback(delve_config)
+      return
+    end
+
+    local host = client_config.host
+    if host == nil then
+      host = "127.0.0.1"
+    end
+
+    local listener_addr = host .. ":" .. client_config.port
+    delve_config.port = client_config.port
+    delve_config.executable.args = { "dap", "-l", listener_addr }
+
+    callback(delve_config)
+  end
 end
 
 local function setup_go_configuration(dap, configs)
-  dap.configurations.go = {
+  local common_debug_configs = {
     {
       type = "go",
       name = "Debug",
       request = "launch",
       program = "${file}",
       buildFlags = configs.delve.build_flags,
+      outputMode = configs.delve.output_mode,
     },
     {
       type = "go",
@@ -109,6 +129,7 @@ local function setup_go_configuration(dap, configs)
       program = "${file}",
       args = get_arguments,
       buildFlags = configs.delve.build_flags,
+      outputMode = configs.delve.output_mode,
     },
     {
       type = "go",
@@ -117,6 +138,7 @@ local function setup_go_configuration(dap, configs)
       program = "${file}",
       args = get_arguments,
       buildFlags = get_build_flags,
+      outputMode = configs.delve.output_mode,
     },
                 {
       type = "go",
@@ -132,6 +154,7 @@ local function setup_go_configuration(dap, configs)
       request = "launch",
       program = "${fileDirname}",
       buildFlags = configs.delve.build_flags,
+      outputMode = configs.delve.output_mode,
     },
     {
       type = "go",
@@ -148,6 +171,7 @@ local function setup_go_configuration(dap, configs)
       mode = "test",
       program = "${file}",
       buildFlags = configs.delve.build_flags,
+      outputMode = configs.delve.output_mode,
     },
     {
       type = "go",
@@ -156,8 +180,17 @@ local function setup_go_configuration(dap, configs)
       mode = "test",
       program = "./${relativeFileDirname}",
       buildFlags = configs.delve.build_flags,
+      outputMode = configs.delve.output_mode,
     },
   }
+
+  if dap.configurations.go == nil then
+    dap.configurations.go = {}
+  end
+
+  for _, config in ipairs(common_debug_configs) do
+    table.insert(dap.configurations.go, config)
+  end
 
   if configs == nil or configs.dap_configurations == nil then
     return
