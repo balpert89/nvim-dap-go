@@ -147,6 +147,7 @@ local function setup_go_configuration(dap, configs)
       program = "${file}",
       args = get_arguments,
       env = get_env,
+      outputMode = configs.delve.output_mode,
     },
     {
       type = "go",
